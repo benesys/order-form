@@ -53,7 +53,6 @@
       appearance: none; background-color: #fff;
     }
 
-    /* 체크박스 스타일 */
     .checkbox-group { display: flex; align-items: flex-start; margin-bottom: 15px; cursor: pointer; }
     .checkbox-group input { width: 22px; height: 22px; margin-right: 10px; flex-shrink: 0; cursor: pointer; }
     .checkbox-group label { font-size: 15px; cursor: pointer; user-select: none; }
@@ -98,7 +97,7 @@
       <span class="section-title">1️⃣ 주문자 정보</span>
       <input type="text" name="name" placeholder="이름 (주문자)" required>
       <input type="tel" name="phone" placeholder="휴대폰 번호 (- 제외)" inputmode="numeric" pattern="[0-9]*" required>
-      <input type="email" name="email" placeholder="이메일 주소" required>
+      <input type="email" name="email" placeholder="이메일 주소 (선택사항)">
     </div>
 
     <div class="section">
@@ -118,7 +117,7 @@
     </div>
 
     <div class="section">
-      <span class="section-title">4️⃣ 증빙 서류</span>
+      <span class="section-title">4️⃣ 증빙 서류 및 약관</span>
       
       <p class="info-text"><b>증빙 서류 신청</b></p>
       <select name="receiptType">
@@ -128,8 +127,7 @@
         <option value="세금계산서">세금계산서</option>
       </select>
 
-      <p class="info-text"><b>현금영수증 발급용 식별번호</b><br>
-      소득공제용은 '휴대폰 번호', 지출증빙용은 '사업자등록번호'를 입력해 주세요.</p>
+      <p class="info-text"><b>현금영수증 발급용 식별번호</b></p>
       <input type="text" name="receiptId" placeholder="식별번호 입력 (미신청 시 공란)">
 
       <p class="info-text" style="background:#fffbe6; padding:10px; border-radius:8px;">
@@ -139,6 +137,7 @@
       <div class="checkbox-group">
         <input type="checkbox" id="privacyAgree" name="privacyAgree" required>
         <label for="privacyAgree">[필수] 개인정보 수집 및 이용 동의<br>
+        <small style="color:#888;">전자책 발송, 상담, 증빙 발행 목적으로 수집하며 목적 달성 후 파기합니다.</small></label>
       </div>
 
       <div class="checkbox-group">
@@ -146,17 +145,17 @@
         <label for="marketingAgree">[선택] 마케팅 정보 수신 동의</label>
       </div>
     </div>
+
     <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
   </form>
 
   <div class="seller-info">
     <p><b>[문의처]</b></p>
-    <p>카카오채널 : <a href="https://pf.kakao.com/_yxexaan/chat" target="_blank">농부여 채널 바로가기</a></p>
+    <p>카카오채널 : <a href="https://pf.kakao.com/_yxexaan" target="_blank">농부여 채널 바로가기</a></p>
     <p>메일 : <a href="mailto:nongbuyeo@gmail.com">nongbuyeo@gmail.com</a></p>
     <hr>
     <p><b>[판매자 정보]</b></p>
     <p>상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898</p>
-    <p>사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층</p>
     <p>고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a></p>
   </div>
 </div>
@@ -177,8 +176,8 @@
     const btn = document.getElementById('submitBtn');
     const scriptUrl = "https://script.google.com/macros/s/AKfycbz3UfVb_8I4YvKCGU-k18ZL5wt77oHBqcxrkgof3nw-OiBTvAM23TvKZdCb9TVEjCxa/exec";
 
-    // 필수 항목 및 동의 여부 체크
-    if(!form.name.value || !form.phone.value || !form.email.value || !form.address.value) {
+    // 필수 항목 체크 (이메일 제외)
+    if(!form.name.value || !form.phone.value || !form.address.value || !form.qty.value) {
       Swal.fire({ icon: 'warning', title: '입력 확인', text: '필수 항목을 모두 입력해 주세요.', confirmButtonColor: '#4CAF50' });
       return;
     }
@@ -190,7 +189,7 @@
     const data = {
       name: form.name.value,
       phone: form.phone.value,
-      email: form.email.value,
+      email: form.email.value, // 입력값이 없어도 전송됨
       product: form.product.value,
       qty: form.qty.value,
       address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
