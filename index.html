@@ -175,6 +175,47 @@
 </div>
 
 <script>
+  // 설정한 배송비 정보를 저장할 변수
+  let serverSettings = { shippingFee: 4000, freeThreshold: 50000 }; 
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbynL_FvQCHMCYqKXJY1izlwU6tzPBNMis0CYPfz9rhIfu37yw8sk9k3xc9UHEZG2h6Q/exec";
+
+  // 페이지 열리자마자 시트에서 배송비 설정 읽어오기
+  window.onload = function() {
+    fetch(scriptUrl + "?action=getSettings")
+      .then(response => response.json())
+      .then(data => {
+        serverSettings = data; // 시트의 값으로 업데이트
+        updateTotalPrice();    // 화면 갱신
+      })
+      .catch(err => console.error("설정 로딩 실패:", err));
+  };
+
+  // 실시간 합계 계산 (구매자는 수정 불가)
+  function updateTotalPrice() {
+    const price = 28000; // 양송이 2kg 가격
+    const qty = parseInt(document.getElementById('productQty').value) || 0;
+    let baseTotal = price * qty;
+    let finalTotal = baseTotal;
+    let shippingText = "";
+
+    if (baseTotal > 0) {
+      if (baseTotal < serverSettings.freeThreshold) {
+        finalTotal += serverSettings.shippingFee;
+        shippingText = `(배송비 ${serverSettings.shippingFee.toLocaleString()}원 포함)`;
+      } else {
+        shippingText = "(무료배송 적용됨)";
+      }
+    }
+
+    document.getElementById('totalPriceDisplay').innerText = finalTotal.toLocaleString();
+    document.getElementById('shippingInfo').innerText = shippingText;
+    
+    // 설명 문구 업데이트
+    document.getElementById('shippingGuide').innerText = 
+      `🚚 배송비: ${serverSettings.shippingFee.toLocaleString()}원 (${(serverSettings.freeThreshold/10000)}만원 이상 무료)`;
+  }
+
+  
   // 실시간 합계 금액 계산 함수
   function updateTotalPrice() {
     const price = parseInt(document.getElementById('productSelect').value);
