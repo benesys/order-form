@@ -3,110 +3,121 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
   <title>농부여 주문서</title>
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  
   <style>
+    @font-face {
+      font-family: 'GmarketSansMedium';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     /* 기본 초기화 */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
-      padding: 10px; /* 모바일에서는 여백을 줄여 공간 확보 */
-      line-height: 1.5; 
+      font-family: 'GmarketSansMedium', -apple-system, sans-serif; 
+      padding: 15px; 
+      line-height: 1.6; 
       background-color: #f8f9fa; 
       color: #333; 
       margin: 0;
     }
 
     .container { 
-      max-width: 100%; /* 모바일에서 꽉 차게 */
+      max-width: 100%; 
       width: 100%;
       margin: 0 auto; 
       background: white; 
-      padding: 20px 15px; 
-      border-radius: 15px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+      padding: 30px 20px; 
+      border-radius: 20px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
     }
 
-    h2 { color: #2d5a27; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 22px; }
+    h2 { color: #2d5a27; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 28px; }
 
     .description { 
-      font-size: 14px; 
+      font-size: 16px; 
       color: #444; 
-      margin-bottom: 20px; 
+      margin-bottom: 25px; 
       background: #f1f8f1; 
-      padding: 15px; 
-      border-radius: 12px; 
+      padding: 20px; 
+      border-radius: 15px; 
       border: 1px solid #e0eee0;
     }
 
-    .section { margin-bottom: 20px; }
+    .section { margin-bottom: 30px; }
 
     .section-title { 
       font-weight: bold; 
-      font-size: 16px; 
-      margin-bottom: 12px; 
+      font-size: 20px; 
+      margin-bottom: 15px; 
       display: block; 
       color: #2d5a27; 
-      padding-left: 5px;
+      border-left: 6px solid #4CAF50;
+      padding-left: 12px;
     }
 
-    /* 입력창 디자인 변경: 모바일 터치 최적화 */
+    /* 입력창 디자인: 모바일 최적화 및 글씨 확대 */
     input[type="text"], 
     input[type="tel"], 
     input[type="number"], 
     select { 
       width: 100%; 
-      padding: 15px; /* 터치하기 쉽게 더 두껍게 */
-      margin-bottom: 10px; 
+      padding: 18px; 
+      margin-bottom: 12px; 
       border: 1px solid #ddd; 
-      border-radius: 10px; 
-      font-size: 16px; /* 아이폰 자동 확대 방지를 위해 16px 유지 */
-      appearance: none; /* 브라우저 기본 스타일 제거 */
+      border-radius: 12px; 
+      font-size: 18px; /* 아이폰 자동 확대 방지 및 가독성 확보 */
+      font-family: 'GmarketSansMedium', sans-serif;
+      appearance: none;
       background-color: #fff;
     }
 
-    /* 우편번호 버튼 */
+    /* 우편번호 검색 버튼 */
     .btn-zip { 
-      background: #f0f0f0; 
-      color: #555; 
-      border: 1px solid #ccc; 
-      padding: 12px; 
-      border-radius: 8px; 
+      background: #6c757d; 
+      color: white; 
+      border: none; 
+      padding: 16px; 
+      border-radius: 10px; 
       cursor: pointer; 
-      margin-bottom: 10px; 
-      font-size: 14px; 
-      width: 100%; /* 모바일에서는 가득 차게 */
+      margin-bottom: 12px; 
+      font-size: 16px; 
+      width: 100%; 
       font-weight: bold;
+      font-family: 'GmarketSansMedium', sans-serif;
     }
 
-    /* 제출 버튼: 엄지손가락이 닿기 쉽게 더 크게 */
+    /* 주문 완료 버튼 */
     .btn-submit { 
       width: 100%; 
       background: #4CAF50; 
       color: white; 
       border: none; 
-      padding: 18px; 
-      border-radius: 12px; 
-      font-size: 18px; 
+      padding: 22px; 
+      border-radius: 15px; 
+      font-size: 22px; 
       font-weight: bold; 
       cursor: pointer; 
       transition: background 0.3s; 
-      margin-top: 10px;
+      margin-top: 15px;
+      font-family: 'GmarketSansMedium', sans-serif;
       -webkit-appearance: none;
     }
 
     .btn-submit:active { background: #3d8b40; transform: scale(0.98); }
 
-    .readonly-input { background-color: #f5f5f5 !important; color: #777; }
+    .readonly-input { background-color: #f9f9f9 !important; color: #666; }
 
-    /* 모바일 하단 안내 */
     .footer-note {
       text-align: center;
-      font-size: 12px;
+      font-size: 14px;
       color: #999;
-      margin-top: 20px;
+      margin-top: 25px;
     }
   </style>
 </head>
@@ -148,11 +159,12 @@
   </form>
 
   <div class="footer-note">
-    입력하신 정보는 배송 목적으로만 사용됩니다.
+    부여의 신선함을 정성껏 보내드립니다.
   </div>
 </div>
 
 <script>
+  // 카카오 우편번호 API
   function execDaumPostcode() {
     new daum.Postcode({
       oncomplete: function(data) {
@@ -163,10 +175,14 @@
     }).open();
   }
 
+  // 폼 제출 함수
   function submitForm() {
     const form = document.getElementById('orderForm');
     const btn = document.getElementById('submitBtn');
+    // 실제 배포하신 구글 앱 스크립트 URL입니다.
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbz3UfVb_8I4YvKCGU-k18ZL5wt77oHBqcxrkgof3nw-OiBTvAM23TvKZdCb9TVEjCxa/exec";
 
+    // 필수 항목 체크
     if(!form.name.value || !form.phone.value || !form.address.value || !form.qty.value) {
       alert("모든 필수 항목을 입력해 주세요.");
       return;
@@ -180,53 +196,31 @@
       address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value
     };
     
+    // 버튼 비활성화
     btn.disabled = true;
-    btn.innerText = "주문 처리 중...";
+    btn.innerText = "처리 중...";
 
-    // 외부 통신용 fetch 코드
-    function submitForm() {
-  const form = document.getElementById('orderForm');
-  const btn = document.getElementById('submitBtn');
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbz3UfVb_8I4YvKCGU-k18ZL5wt77oHBqcxrkgof3nw-OiBTvAM23TvKZdCb9TVEjCxa/exec"; // 1단계에서 복사한 URL
-
-  if(!form.name.value || !form.phone.value || !form.address.value || !form.qty.value) {
-    alert("모든 필수 항목을 입력해 주세요.");
-    return;
-  }
-
-  const data = {
-    name: form.name.value,
-    phone: form.phone.value,
-    product: form.product.value,
-    qty: form.qty.value,
-    address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value
-  };
-  
-  btn.disabled = true;
-  btn.innerText = "주문 처리 중...";
-
-  // fetch를 이용한 외부 전송
-  fetch(scriptUrl, {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-  .then(response => response.text())
-  .then(res => {
-    if (res === "Success") {
-      alert("성공적으로 접수되었습니다!");
-      form.reset();
-    } else {
-      alert("오류가 발생했습니다: " + res);
-    }
-    btn.disabled = false;
-    btn.innerText = "주문 완료하기";
-  })
-  .catch(err => {
-    alert("전송 실패: " + err);
-    btn.disabled = false;
-    btn.innerText = "주문 완료하기";
-  });
-}
+    // fetch를 이용한 데이터 전송
+    fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    .then(response => response.text())
+    .then(res => {
+      if (res === "Success") {
+        alert("성공적으로 접수되었습니다!");
+        form.reset();
+      } else {
+        alert("오류가 발생했습니다: " + res);
+      }
+      btn.disabled = false;
+      btn.innerText = "주문 완료하기";
+    })
+    .catch(err => {
+      alert("전송 실패: 인터넷 연결을 확인해 주세요.");
+      btn.disabled = false;
+      btn.innerText = "주문 완료하기";
+    });
   }
 </script>
 
