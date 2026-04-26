@@ -21,64 +21,90 @@
     
     body { 
       font-family: 'GmarketSansMedium', -apple-system, sans-serif; 
-      padding: 15px; line-height: 1.6; background-color: #f8f9fa; color: #333; margin: 0;
+      padding: 20px 10px; /* 상하 여백 추가 */
+      line-height: 1.6; 
+      background-color: #f1f3f5; /* 배경색을 살짝 더 차분하게 변경 */
+      color: #333; 
+      margin: 0;
     }
 
     .swal2-popup { font-family: 'GmarketSansMedium', sans-serif !important; border-radius: 20px !important; }
     .swal2-title { white-space: nowrap; font-size: 20px !important; }
 
+    /* 핵심 변경: 반응형 컨테이너 */
     .container { 
-      max-width: 100%; width: 100%; margin: 0 auto; background: white; 
-      padding: 30px 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      max-width: 650px; /* PC에서 너무 퍼지지 않게 최대 너비 제한 */
+      width: 100%;
+      margin: 0 auto; 
+      background: white; 
+      padding: 40px 30px; /* 내부 여백을 넉넉하게 */
+      border-radius: 25px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
     }
 
-    h2 { color: #2d5a27; text-align: center; margin-top: 0; margin-bottom: 15px; font-size: 28px; }
+    /* 모바일에서는 패딩을 조금 줄임 */
+    @media (max-width: 600px) {
+      .container { padding: 25px 15px; border-radius: 15px; }
+      body { padding: 10px 5px; }
+      h2 { font-size: 24px; }
+    }
+
+    h2 { color: #2d5a27; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 30px; }
 
     .description { 
-      font-size: 15px; color: #444; margin-bottom: 25px; background: #f1f8f1; 
+      font-size: 16px; color: #444; margin-bottom: 30px; background: #f1f8f1; 
       padding: 20px; border-radius: 15px; border: 1px solid #e0eee0;
     }
 
-    .section { margin-bottom: 30px; }
+    .section { margin-bottom: 35px; }
     .section-title { 
-      font-weight: bold; font-size: 19px; margin-bottom: 15px; display: block; 
+      font-weight: bold; font-size: 20px; margin-bottom: 18px; display: block; 
       color: #2d5a27; border-left: 6px solid #4CAF50; padding-left: 12px;
     }
 
-    .info-text { font-size: 14px; color: #666; margin-bottom: 10px; line-height: 1.4; }
+    .info-text { font-size: 14px; color: #666; margin-bottom: 10px; line-height: 1.5; }
 
     input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select { 
-      width: 100%; padding: 18px; margin-bottom: 12px; border: 1px solid #ddd; 
+      width: 100%; padding: 16px; margin-bottom: 15px; border: 1px solid #dee2e6; 
       border-radius: 12px; font-size: 17px; font-family: 'GmarketSansMedium', sans-serif;
       appearance: none; background-color: #fff;
+      transition: border-color 0.2s;
     }
+    input:focus, select:focus { border-color: #4CAF50; outline: none; }
 
     .checkbox-group { display: flex; align-items: flex-start; margin-bottom: 15px; cursor: pointer; }
-    .checkbox-group input { width: 22px; height: 22px; margin-right: 10px; flex-shrink: 0; cursor: pointer; }
-    .checkbox-group label { font-size: 15px; cursor: pointer; user-select: none; }
+    .checkbox-group input { width: 22px; height: 22px; margin-right: 12px; flex-shrink: 0; cursor: pointer; }
+    .checkbox-group label { font-size: 15px; cursor: pointer; user-select: none; color: #555; }
 
     .btn-zip { 
       background: #6c757d; color: white; border: none; padding: 16px; 
-      border-radius: 10px; cursor: pointer; margin-bottom: 12px; font-size: 16px; 
+      border-radius: 12px; cursor: pointer; margin-bottom: 12px; font-size: 16px; 
       width: 100%; font-weight: bold; font-family: 'GmarketSansMedium', sans-serif;
     }
 
     .btn-submit { 
       width: 100%; background: #4CAF50; color: white; border: none; padding: 22px; 
-      border-radius: 15px; font-size: 22px; font-weight: bold; cursor: pointer; 
-      transition: background 0.3s; margin-top: 15px; font-family: 'GmarketSansMedium', sans-serif;
+      border-radius: 15px; font-size: 24px; font-weight: bold; cursor: pointer; 
+      transition: all 0.3s; margin-top: 20px; font-family: 'GmarketSansMedium', sans-serif;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
     }
+    .btn-submit:hover { background: #45a049; transform: translateY(-2px); }
+    .btn-submit:active { transform: scale(0.98); }
 
-    .btn-submit:active { background: #3d8b40; transform: scale(0.98); }
-    .readonly-input { background-color: #f9f9f9 !important; color: #666; }
+    .readonly-input { background-color: #f8f9fa !important; color: #666; }
 
+    /* 판매자 정보: 줄 간격 최적화 */
     .seller-info {
-      margin-top: 40px; padding: 25px 20px; background-color: #f1f3f5;
-      border-radius: 15px; font-size: 13px; color: #666; line-height: 1.8;
+      margin-top: 50px; padding: 30px 25px; background-color: #f8f9fa;
+      border-radius: 20px; font-size: 14px; color: #777; line-height: 1.7;
+      border: 1px solid #eee;
     }
-    .seller-info b { color: #333; font-size: 15px; }
+    .seller-info p { margin: 4px 0; } /* 단락 간격 최소화 */
+    .seller-info b { color: #333; font-size: 16px; display: inline-block; margin-bottom: 5px; }
     .seller-info a { color: #2d5a27; text-decoration: none; font-weight: bold; }
-    .seller-info hr { border: 0; border-top: 1px solid #dee2e6; margin: 15px 0; }
+    .seller-info hr { border: 0; border-top: 1px solid #e9ecef; margin: 20px 0; }
+
+    .footer-note { text-align: center; font-size: 14px; color: #aaa; margin-top: 30px; }
   </style>
 </head>
 <body>
@@ -130,14 +156,14 @@
       <p class="info-text"><b>현금영수증 발급용 식별번호</b></p>
       <input type="text" name="receiptId" placeholder="식별번호 입력 (미신청 시 공란)">
 
-      <p class="info-text" style="background:#fffbe6; padding:10px; border-radius:8px;">
+      <p class="info-text" style="background:#fffbe6; padding:12px; border-radius:10px; border:1px solid #ffe58f;">
         💡 세금계산서가 필요하신 분은 <b>nongbuyeo@gmail.com</b>으로 사업자등록증 사본을 보내주세요.
       </p>
 
       <div class="checkbox-group">
         <input type="checkbox" id="privacyAgree" name="privacyAgree" required>
         <label for="privacyAgree">[필수] 개인정보 수집 및 이용 동의<br>
-        <small style="color:#888;">전자책 발송, 상담, 증빙 발행 목적으로 수집하며 목적 달성 후 파기합니다.</small></label>
+        <small style="color:#999;">상담 및 증빙 발행 목적으로 수집하며 목적 달성 후 파기합니다.</small></label>
       </div>
 
       <div class="checkbox-group">
@@ -149,17 +175,19 @@
     <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
   </form>
 
+  <div class="footer-note">부여의 신선함을 정성껏 보내드립니다.</div>
+
   <div class="seller-info">
-    <p><b>[문의처]</b><br>
-    카카오채널 : <a href="https://pf.kakao.com/_yxexaan" target="_blank">농부여 채널 바로가기</a><br>
-    메일 : <a href="mailto:nongbuyeo@gmail.com">nongbuyeo@gmail.com</a>
-    </p>
+    <p><b>[문의처]</b></p>
+    <p>카카오채널 : <a href="https://pf.kakao.com/_yxexaan" target="_blank">농부여 채널 바로가기</a></p>
+    <p>메일 : <a href="mailto:nongbuyeo@gmail.com">nongbuyeo@gmail.com</a></p>
     <hr>
-    <p><b>[판매자 정보]</b><br>
-    상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898<br>
-    사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층<br>
-    고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a>
+    <p><b>[판매자 정보]</b></p>
+    <p>
+      상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898<br>
+      사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층
     </p>
+    <p>고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a> | 통신판매신고 : 제2020-충남부여-0062호</p>
   </div>
 </div>
 
@@ -179,7 +207,6 @@
     const btn = document.getElementById('submitBtn');
     const scriptUrl = "https://script.google.com/macros/s/AKfycbz3UfVb_8I4YvKCGU-k18ZL5wt77oHBqcxrkgof3nw-OiBTvAM23TvKZdCb9TVEjCxa/exec";
 
-    // 필수 항목 체크 (이메일 제외)
     if(!form.name.value || !form.phone.value || !form.address.value || !form.qty.value) {
       Swal.fire({ icon: 'warning', title: '입력 확인', text: '필수 항목을 모두 입력해 주세요.', confirmButtonColor: '#4CAF50' });
       return;
@@ -192,7 +219,7 @@
     const data = {
       name: form.name.value,
       phone: form.phone.value,
-      email: form.email.value, // 입력값이 없어도 전송됨
+      email: form.email.value,
       product: form.product.value,
       qty: form.qty.value,
       address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
