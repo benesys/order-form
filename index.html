@@ -5,7 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
   <title>농부여 주문서</title>
+  
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     @font-face {
@@ -15,7 +17,6 @@
       font-style: normal;
     }
 
-    /* 기본 초기화 */
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     body { 
@@ -26,6 +27,9 @@
       color: #333; 
       margin: 0;
     }
+
+    /* 알림창 폰트 강제 적용 */
+    .swal2-popup { font-family: 'GmarketSansMedium', sans-serif !important; border-radius: 20px !important; }
 
     .container { 
       max-width: 100%; 
@@ -61,7 +65,6 @@
       padding-left: 12px;
     }
 
-    /* 입력창 디자인: 모바일 최적화 및 글씨 확대 */
     input[type="text"], 
     input[type="tel"], 
     input[type="number"], 
@@ -71,13 +74,12 @@
       margin-bottom: 12px; 
       border: 1px solid #ddd; 
       border-radius: 12px; 
-      font-size: 18px; /* 아이폰 자동 확대 방지 및 가독성 확보 */
+      font-size: 18px; 
       font-family: 'GmarketSansMedium', sans-serif;
       appearance: none;
       background-color: #fff;
     }
 
-    /* 우편번호 검색 버튼 */
     .btn-zip { 
       background: #6c757d; 
       color: white; 
@@ -92,7 +94,6 @@
       font-family: 'GmarketSansMedium', sans-serif;
     }
 
-    /* 주문 완료 버튼 */
     .btn-submit { 
       width: 100%; 
       background: #4CAF50; 
@@ -106,7 +107,6 @@
       transition: background 0.3s; 
       margin-top: 15px;
       font-family: 'GmarketSansMedium', sans-serif;
-      -webkit-appearance: none;
     }
 
     .btn-submit:active { background: #3d8b40; transform: scale(0.98); }
@@ -164,7 +164,6 @@
 </div>
 
 <script>
-  // 카카오 우편번호 API
   function execDaumPostcode() {
     new daum.Postcode({
       oncomplete: function(data) {
@@ -175,16 +174,18 @@
     }).open();
   }
 
-  // 폼 제출 함수
   function submitForm() {
     const form = document.getElementById('orderForm');
     const btn = document.getElementById('submitBtn');
-    // 실제 배포하신 구글 앱 스크립트 URL입니다.
     const scriptUrl = "https://script.google.com/macros/s/AKfycbz3UfVb_8I4YvKCGU-k18ZL5wt77oHBqcxrkgof3nw-OiBTvAM23TvKZdCb9TVEjCxa/exec";
 
-    // 필수 항목 체크
     if(!form.name.value || !form.phone.value || !form.address.value || !form.qty.value) {
-      alert("모든 필수 항목을 입력해 주세요.");
+      Swal.fire({
+        icon: 'warning',
+        title: '입력 확인',
+        text: '모든 필수 항목을 입력해 주세요.',
+        confirmButtonColor: '#4CAF50'
+      });
       return;
     }
 
@@ -196,11 +197,9 @@
       address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value
     };
     
-    // 버튼 비활성화
     btn.disabled = true;
     btn.innerText = "처리 중...";
 
-    // fetch를 이용한 데이터 전송
     fetch(scriptUrl, {
       method: 'POST',
       body: JSON.stringify(data)
@@ -208,16 +207,31 @@
     .then(response => response.text())
     .then(res => {
       if (res === "Success") {
-        alert("성공적으로 접수되었습니다!");
+        // ✅ 주소창 문구가 없는 깔끔한 팝업
+        Swal.fire({
+          icon: 'success',
+          title: '성공적으로 접수되었습니다!',
+          showConfirmButton: true,
+          confirmButtonText: '확인',
+          confirmButtonColor: '#4CAF50'
+        });
         form.reset();
       } else {
-        alert("오류가 발생했습니다: " + res);
+        Swal.fire({
+          icon: 'error',
+          title: '접수 실패',
+          text: '오류가 발생했습니다: ' + res
+        });
       }
       btn.disabled = false;
       btn.innerText = "주문 완료하기";
     })
     .catch(err => {
-      alert("전송 실패: 인터넷 연결을 확인해 주세요.");
+      Swal.fire({
+        icon: 'error',
+        title: '전송 실패',
+        text: '서버 연결 상태를 확인해 주세요.'
+      });
       btn.disabled = false;
       btn.innerText = "주문 완료하기";
     });
