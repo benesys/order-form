@@ -97,6 +97,103 @@
   </div>
 </div>
 
+
+  // 상품 규격 선택
+<div class="section">
+  <span class="section-title">2️⃣ 상품 및 규격 선택</span>
+  
+  <p class="info-text">상품 종류</p>
+  <select id="mainProduct" onchange="updateSpecOptions()">
+    <option value="">상품을 불러오는 중...</option>
+  </select>
+
+  <p class="info-text">규격(무게/사이즈)</p>
+  <select id="specSelect" onchange="updateTotalPrice()">
+    <option value="">상품을 먼저 선택하세요</option>
+  </select>
+
+  <input type="number" name="qty" id="productQty" value="1" min="1" required oninput="updateTotalPrice()">
+  
+  <div class="total-price-box">
+    <span id="shippingStatus" style="font-size:14px; color:#e67e22; display:block; margin-bottom:5px;"></span>
+    <span style="font-size:16px;">결제 예정 금액 : </span>
+    <span class="total-price-value" id="totalPriceDisplay">0</span>원
+  </div>
+</div>
+
+<script>
+  let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
+  const scriptUrl = "새로_배포한_URL_넣기"; 
+
+  window.onload = function() {
+    fetch(scriptUrl + "?action=getSettings")
+      .then(res => res.json())
+      .then(data => {
+        serverSettings = data;
+        
+        // 1. 중복 제거된 상품명 리스트 만들기 (양송이, 부여 밤 등)
+        const uniqueProducts = [...new Set(data.productList.map(p => p.name))];
+        const mainSelect = document.getElementById('mainProduct');
+        mainSelect.innerHTML = '<option value="">--- 상품 선택 ---</option>';
+        
+        uniqueProducts.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.innerText = name;
+          mainSelect.appendChild(opt);
+        });
+
+        document.getElementById('feeTxt').innerText = data.shippingFee.toLocaleString();
+        document.getElementById('limitTxt').innerText = (data.freeThreshold / 10000);
+      });
+  };
+
+  // 상품명에 따른 규격 옵션 업데이트
+  function updateSpecOptions() {
+    const selectedProduct = document.getElementById('mainProduct').value;
+    const specSelect = document.getElementById('specSelect');
+    specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
+    
+    if (!selectedProduct) return;
+
+    // 전체 리스트에서 선택한 상품명과 일치하는 규격만 필터링
+    const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
+    
+    filteredSpecs.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.price; // 가격을 value에 담음
+      opt.innerText = `${item.spec} (${item.price.toLocaleString()}원)`;
+      specSelect.appendChild(opt);
+    });
+    updateTotalPrice();
+  }
+
+  function updateTotalPrice() {
+    const price = parseInt(document.getElementById('specSelect').value) || 0;
+    const qty = parseInt(document.getElementById('productQty').value) || 0;
+    let total = price * qty;
+    
+    if (total > 0 && total < serverSettings.freeThreshold) {
+      total += serverSettings.shippingFee;
+      document.getElementById('shippingStatus').innerText = `배송비 ${serverSettings.shippingFee.toLocaleString()}원 추가됨`;
+    } else {
+      document.getElementById('shippingStatus').innerText = (total >= serverSettings.freeThreshold && total > 0) ? "🎉 무료배송 적용됨" : "";
+    }
+    document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
+  }
+  
+  // submitForm 함수에서 상품명 전송 시 수정
+  // const productData = document.getElementById('mainProduct').value + " " + document.getElementById('specSelect').options[document.getElementById('specSelect').selectedIndex].text;
+</script>
+
+
+
+
+
+
+
+
+  
 <script>
   // 사장님이 시트에서 정한 설정값 (초기값)
   let serverSettings = { shippingFee: 4000, freeThreshold: 50000 };
