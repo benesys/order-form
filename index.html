@@ -33,7 +33,7 @@
 <body>
 
 <div class="container">
-  <h2>🍄 농부여 양송이 주문서</h2>
+  <h2 id="orderTitle"> 농부여 주문서</h2>
   
   <div class="description" id="orderDesc">
     ✅ 산지직송 · 당일수확 · 신선보장<br>
@@ -74,7 +74,7 @@
 
 <script>
   let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbwHAbIkeCyA6tRq-ssYWtSyyhC9DERupWkmoslCY_RkifSF-K6oqvjDRMGs75uu_R7S/exec"; 
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyrU_r2_8Sn5SC8oDOE5yHDzmb3gkgyuJ8ePUgJSjixJf0FRod-VoSisAq8EbbtPd-T/exec"; 
 
   window.onload = function() {
     fetch(scriptUrl + "?action=getSettings")
@@ -100,24 +100,35 @@
   };
 
   // 상품명에 따른 규격 옵션 업데이트
-  function updateSpecOptions() {
-    const selectedProduct = document.getElementById('mainProduct').value;
-    const specSelect = document.getElementById('specSelect');
-    specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
-    
-    if (!selectedProduct) return;
-
-    // 전체 리스트에서 선택한 상품명과 일치하는 규격만 필터링
-    const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
-    
-    filteredSpecs.forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.price; // 가격을 value에 담음
-      opt.innerText = `${item.spec} (${item.price.toLocaleString()}원)`;
-      specSelect.appendChild(opt);
-    });
-    updateTotalPrice();
+function updateSpecOptions() {
+  const selectedProduct = document.getElementById('mainProduct').value;
+  const specSelect = document.getElementById('specSelect');
+  const titleElement = document.getElementById('orderTitle');
+  
+  specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
+  
+  if (!selectedProduct) {
+    titleElement.innerText = "📦 농부여 주문서"; 
+    return;
   }
+
+  // ✅ 선택한 상품의 아이콘 찾기
+  const productInfo = serverSettings.productList.find(p => p.name === selectedProduct);
+  const currentIcon = productInfo ? productInfo.icon : "📦";
+
+  // ✅ 아이콘과 상품명을 조합하여 타이틀 변경
+  titleElement.innerText = `${currentIcon} 농부여 ${selectedProduct} 주문서`;
+
+  // 규격 필터링 로직 (기존과 동일)
+  const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
+  filteredSpecs.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.price;
+    opt.innerText = `${item.spec} (${item.price.toLocaleString()}원)`;
+    specSelect.appendChild(opt);
+  });
+  updateTotalPrice();
+}
 
   function updateTotalPrice() {
     const price = parseInt(document.getElementById('specSelect').value) || 0;
