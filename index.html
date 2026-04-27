@@ -49,56 +49,7 @@
       <input type="email" name="email" placeholder="이메일 주소 (선택사항)">
     </div>
 
-    <div class="section">
-      <span class="section-title">2️⃣ 상품 선택</span>
-      <select name="product" id="productSelect" onchange="updateTotalPrice()">
-        <option value="28000">양송이 2kg - 28,000원</option>
-      </select>
-      <input type="number" name="qty" id="productQty" value="1" min="1" required oninput="updateTotalPrice()">
-      
-      <div class="total-price-box">
-        <span id="shippingStatus" style="font-size:14px; color:#e67e22; display:block; margin-bottom:5px;"></span>
-        <span style="font-size:16px;">결제 예정 금액 : </span>
-        <span class="total-price-value" id="totalPriceDisplay">28,000</span>원
-      </div>
-    </div>
-
-    <div class="section">
-      <span class="section-title">3️⃣ 배송 정보</span>
-      <button type="button" onclick="execDaumPostcode()" style="width:100%; padding:15px; background:#6c757d; color:white; border:none; border-radius:10px; margin-bottom:10px; font-family:'GmarketSansMedium';">📮 우편번호 검색</button>
-      <input type="text" id="postcode" name="postcode" placeholder="우편번호" readonly style="background:#f9f9f9;">
-      <input type="text" id="address" name="address" placeholder="기본 주소" readonly style="background:#f9f9f9;">
-      <input type="text" id="detailAddress" name="detailAddress" placeholder="상세 주소를 입력해 주세요">
-    </div>
-
-    <div class="section">
-      <span class="section-title">4️⃣ 증빙 서류 </span>
-      <select name="receiptType">
-        <option value="미신청">증빙서류 미신청</option>
-        <option value="현금영수증 (개인)">현금영수증 (개인 소득공제용)</option>
-        <option value="현금영수증 (사업자)">현금영수증 (사업자 지출증빙용)</option>
-        <option value="세금계산서">세금계산서</option>
-      </select>
-      <input type="text" name="receiptId" placeholder="식별번호 입력 (휴대폰 또는 사업자번호)">
-      <div class="checkbox-group">
-        <input type="checkbox" id="privacyAgree" required>
-        <label for="privacyAgree">[필수] 개인정보 수집 및 이용 동의</label>
-      </div>
-    </div>
-
-    <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
-  </form>
-
-  <div class="seller-info">
-    <p><b>[판매자 정보]</b></p>
-    <p>상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898<br>
-    사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층</p>
-    <p>고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a></p>
-  </div>
-</div>
-
-
-  // 상품 규격 선택
+     // 상품 규격 선택
 <div class="section">
   <span class="section-title">2️⃣ 상품 및 규격 선택</span>
   
@@ -123,7 +74,7 @@
 
 <script>
   let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
-  const scriptUrl = "새로_배포한_URL_넣기"; 
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbwHAbIkeCyA6tRq-ssYWtSyyhC9DERupWkmoslCY_RkifSF-K6oqvjDRMGs75uu_R7S/exec"; 
 
   window.onload = function() {
     fetch(scriptUrl + "?action=getSettings")
@@ -187,13 +138,42 @@
 </script>
 
 
+    
+    <div class="section">
+      <span class="section-title">3️⃣ 배송 정보</span>
+      <button type="button" onclick="execDaumPostcode()" style="width:100%; padding:15px; background:#6c757d; color:white; border:none; border-radius:10px; margin-bottom:10px; font-family:'GmarketSansMedium';">📮 우편번호 검색</button>
+      <input type="text" id="postcode" name="postcode" placeholder="우편번호" readonly style="background:#f9f9f9;">
+      <input type="text" id="address" name="address" placeholder="기본 주소" readonly style="background:#f9f9f9;">
+      <input type="text" id="detailAddress" name="detailAddress" placeholder="상세 주소를 입력해 주세요">
+    </div>
+
+    <div class="section">
+      <span class="section-title">4️⃣ 증빙 서류 </span>
+      <select name="receiptType">
+        <option value="미신청">증빙서류 미신청</option>
+        <option value="현금영수증 (개인)">현금영수증 (개인 소득공제용)</option>
+        <option value="현금영수증 (사업자)">현금영수증 (사업자 지출증빙용)</option>
+        <option value="세금계산서">세금계산서</option>
+      </select>
+      <input type="text" name="receiptId" placeholder="식별번호 입력 (휴대폰 또는 사업자번호)">
+      <div class="checkbox-group">
+        <input type="checkbox" id="privacyAgree" required>
+        <label for="privacyAgree">[필수] 개인정보 수집 및 이용 동의</label>
+      </div>
+    </div>
+
+    <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
+  </form>
+
+  <div class="seller-info">
+    <p><b>[판매자 정보]</b></p>
+    <p>상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898<br>
+    사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층</p>
+    <p>고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a></p>
+  </div>
+</div>
 
 
-
-
-
-
-  
 <script>
   // 사장님이 시트에서 정한 설정값 (초기값)
   let serverSettings = { shippingFee: 4000, freeThreshold: 50000 };
