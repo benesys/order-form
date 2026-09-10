@@ -1,125 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-  <title>농부여 주문서</title>
-  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    @font-face { font-family: 'GmarketSansMedium'; src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff'); font-weight: normal; font-style: normal; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'GmarketSansMedium', sans-serif; padding: 20px 10px; line-height: 1.6; background-color: #f1f3f5; margin: 0; }
-    .container { max-width: 650px; width: 100%; margin: 0 auto; background: white; padding: 40px 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    h2 { color: #2d5a27; text-align: center; font-size: 30px; margin-bottom: 20px; }
-    
-    /* 설명박스 - 시트 값에 따라 변함 */
-    .description { font-size: 16px; color: #444; margin-bottom: 30px; background: #f1f8f1; padding: 20px; border-radius: 15px; border: 1px solid #e0eee0; }
-    
-    .section { margin-bottom: 35px; }
-    .section-title { font-weight: bold; font-size: 20px; margin-bottom: 18px; display: block; color: #2d5a27; border-left: 6px solid #4CAF50; padding-left: 12px; }
-    input, select { width: 100%; padding: 16px; margin-bottom: 15px; border: 1px solid #dee2e6; border-radius: 12px; font-size: 17px; font-family: 'GmarketSansMedium'; }
-    
-    .total-price-box { background-color: #fff9db; padding: 20px; border-radius: 12px; text-align: right; border: 1px dashed #fab005; }
-    .total-price-value { font-size: 24px; color: #e67e22; font-weight: bold; }
-    
-    .btn-submit { width: 100%; background: #4CAF50; color: white; border: none; padding: 22px; border-radius: 15px; font-size: 24px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: 'GmarketSansMedium'; }
-    .seller-info { margin-top: 50px; padding: 25px; background: #f8f9fa; border-radius: 20px; font-size: 14px; color: #777; border: 1px solid #eee; }
-    .checkbox-group { display: flex; align-items: flex-start; margin-bottom: 15px; }
-    .checkbox-group input { width: 22px; height: 22px; margin-right: 12px; }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <h2 id="orderTitle"> 농부여 주문서</h2>
-  
-  <div class="description" id="orderDesc">
-    ✅ 산지직송 · 당일수확 · 신선보장<br>
-    🚚 배송비: <span id="feeTxt">...</span>원 (<span id="limitTxt">...</span>만원 이상 무료)<br>
-    💳 농협 356-1382-2116-13 (김영호)
-  </div>
-
-  <form id="orderForm">
-    <div class="section">
-      <span class="section-title">1️⃣ 주문자 정보</span>
-      <input type="text" name="name" placeholder="이름 (주문자)" required>
-      <input type="tel" name="phone" placeholder="휴대폰 번호 (- 제외)" required>
-      <input type="email" name="email" placeholder="이메일 주소 (선택사항)">
-    </div>
-
-     
-<div class="section">
-  <span class="section-title">2️⃣ 상품 및 규격 선택</span>
-  
-  <p class="info-text">상품 종류</p>
-  <select id="mainProduct" onchange="updateSpecOptions()">
-    <option value="">상품을 불러오는 중...</option>
-  </select>
-
-  <p class="info-text">규격(무게/사이즈)</p>
-  <select id="specSelect" onchange="updateTotalPrice()">
-    <option value="">상품을 먼저 선택하세요</option>
-  </select>
-
-  <input type="number" name="qty" id="productQty" value="1" min="1" required oninput="updateTotalPrice()">
-  
-  <div class="total-price-box">
-    <span id="shippingStatus" style="font-size:14px; color:#e67e22; display:block; margin-bottom:5px;"></span>
-    <span style="font-size:16px;">결제 예정 금액 : </span>
-    <span class="total-price-value" id="totalPriceDisplay">0</span>원
-  </div>
-</div>
-
 <script>
-  let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbyrU_r2_8Sn5SC8oDOE5yHDzmb3gkgyuJ8ePUgJSjixJf0FRod-VoSisAq8EbbtPd-T/exec"; 
+let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
+const scriptUrl = "https://script.google.com/macros/s/AKfycbyrU_r2_8Sn5SC8oDOE5yHDzmb3gkgyuJ8ePUgJSjixJf0FRod-VoSisAq8EbbtPd-T/exec";
 
-  window.onload = function() {
-    fetch(scriptUrl + "?action=getSettings")
-      .then(res => res.json())
-      .then(data => {
-        serverSettings = data;
-        
-        // 1. 중복 제거된 상품명 리스트 만들기 (양송이, 부여 밤 등)
-        const uniqueProducts = [...new Set(data.productList.map(p => p.name))];
-        const mainSelect = document.getElementById('mainProduct');
-        mainSelect.innerHTML = '<option value="">--- 상품 선택 ---</option>';
-        
-        uniqueProducts.forEach(name => {
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.innerText = name;
-          mainSelect.appendChild(opt);
-        });
-
-        document.getElementById('feeTxt').innerText = data.shippingFee.toLocaleString();
-        document.getElementById('limitTxt').innerText = (data.freeThreshold / 10000);
+window.onload = function() {
+  fetch(scriptUrl + "?action=getSettings")
+    .then(res => res.json())
+    .then(data => {
+      serverSettings = data;
+      const uniqueProducts = [...new Set(data.productList.map(p => p.name))];
+      const mainSelect = document.getElementById('mainProduct');
+      mainSelect.innerHTML = '<option value="">--- 상품 선택 ---</option>';
+      uniqueProducts.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        mainSelect.appendChild(opt);
       });
-  };
+      document.getElementById('feeTxt').innerText = data.shippingFee.toLocaleString();
+      document.getElementById('limitTxt').innerText = (data.freeThreshold / 10000);
+      updateTotalPrice();
+    })
+    .catch(err => {
+      console.error("설정 로딩 실패", err);
+    });
+};
 
-  // 상품명에 따른 규격 옵션 업데이트
 function updateSpecOptions() {
   const selectedProduct = document.getElementById('mainProduct').value;
   const specSelect = document.getElementById('specSelect');
   const titleElement = document.getElementById('orderTitle');
-  
   specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
-  
+
   if (!selectedProduct) {
-    titleElement.innerText = "📦 농부여 주문서"; 
+    titleElement.innerText = "📦 농부여 주문서";
+    updateTotalPrice();
     return;
   }
 
-  // ✅ 선택한 상품의 아이콘 찾기
   const productInfo = serverSettings.productList.find(p => p.name === selectedProduct);
   const currentIcon = productInfo ? productInfo.icon : "📦";
-
-  // ✅ 아이콘과 상품명을 조합하여 타이틀 변경
   titleElement.innerText = `${currentIcon} 농부여 ${selectedProduct} 주문서`;
 
-  // 규격 필터링 로직 (기존과 동일)
   const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
   filteredSpecs.forEach(item => {
     const opt = document.createElement('option');
@@ -130,146 +51,78 @@ function updateSpecOptions() {
   updateTotalPrice();
 }
 
-  function updateTotalPrice() {
-    const price = parseInt(document.getElementById('specSelect').value) || 0;
-    const qty = parseInt(document.getElementById('productQty').value) || 0;
-    let total = price * qty;
-    
-    if (total > 0 && total < serverSettings.freeThreshold) {
-      total += serverSettings.shippingFee;
-      document.getElementById('shippingStatus').innerText = `배송비 ${serverSettings.shippingFee.toLocaleString()}원 추가됨`;
-    } else {
-      document.getElementById('shippingStatus').innerText = (total >= serverSettings.freeThreshold && total > 0) ? "🎉 무료배송 적용됨" : "";
-    }
-    document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
+function updateTotalPrice() {
+  const specEl = document.getElementById('specSelect');
+  const price = parseInt(specEl.value) || 0;
+  const qty = parseInt(document.getElementById('productQty').value) || 0;
+  let total = price * qty;
+
+  if (total > 0 && total < serverSettings.freeThreshold) {
+    total += serverSettings.shippingFee;
+    document.getElementById('shippingStatus').innerText = `배송비 ${serverSettings.shippingFee.toLocaleString()}원 추가됨`;
+  } else {
+    document.getElementById('shippingStatus').innerText = (total >= serverSettings.freeThreshold && total > 0) ? "🎉 무료배송 적용됨" : "";
   }
-  
-  // submitForm 함수에서 상품명 전송 시 수정
-  // const productData = document.getElementById('mainProduct').value + " " + document.getElementById('specSelect').options[document.getElementById('specSelect').selectedIndex].text;
-</script>
+  document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
+}
 
+function execDaumPostcode() {
+  new daum.Postcode({
+    oncomplete: function(data) {
+      document.getElementById('postcode').value = data.zonecode;
+      document.getElementById('address').value = data.address;
+      document.getElementById('detailAddress').focus();
+    }
+  }).open();
+}
 
-    
-    <div class="section">
-      <span class="section-title">3️⃣ 배송 정보</span>
-      <button type="button" onclick="execDaumPostcode()" style="width:100%; padding:15px; background:#6c757d; color:white; border:none; border-radius:10px; margin-bottom:10px; font-family:'GmarketSansMedium';">📮 우편번호 검색</button>
-      <input type="text" id="postcode" name="postcode" placeholder="우편번호" readonly style="background:#f9f9f9;">
-      <input type="text" id="address" name="address" placeholder="기본 주소" readonly style="background:#f9f9f9;">
-      <input type="text" id="detailAddress" name="detailAddress" placeholder="상세 주소를 입력해 주세요">
-    </div>
+function submitForm() {
+  const form = document.getElementById('orderForm');
+  const btn = document.getElementById('submitBtn');
+  const specSelect = document.getElementById('specSelect');
 
-    <div class="section">
-      <span class="section-title">4️⃣ 증빙 서류 </span>
-      <select name="receiptType">
-        <option value="미신청">증빙서류 미신청</option>
-        <option value="현금영수증 (개인)">현금영수증 (개인 소득공제용)</option>
-        <option value="현금영수증 (사업자)">현금영수증 (사업자 지출증빙용)</option>
-        <option value="세금계산서">세금계산서</option>
-      </select>
-      <input type="text" name="receiptId" placeholder="식별번호 입력 (휴대폰 또는 사업자번호)">
-      <div class="checkbox-group">
-        <input type="checkbox" id="privacyAgree" required>
-        <label for="privacyAgree">[필수] 개인정보 수집 및 이용 동의</label>
-      </div>
-    </div>
+  if(!form.name.value || !form.phone.value || !form.address.value || !form.privacyAgree.checked || !specSelect.value) {
+    Swal.fire({ icon: 'warning', title: '입력 확인', text: '상품 규격 및 필수 항목을 모두 입력/체크해 주세요.' });
+    return;
+  }
 
-    <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
-  </form>
+  const selectedProductName = document.getElementById('mainProduct').value;
+  const selectedSpecText = specSelect.options[specSelect.selectedIndex].text;
 
-  <div class="seller-info">
-    <p><b>[판매자 정보]</b></p>
-    <p>상호 : 두빛나래 | 대표자 : 김영호 | 사업자번호 : 735-35-00898<br>
-    사업장 소재지 : 충남 부여군 충화면 충신로373번길 26-10 1층</p>
-    <p>고객센터 : <a href="tel:010-8456-0350">010-8456-0350</a></p>
-  </div>
-</div>
-
-
-<script>
-  // 사장님이 시트에서 정한 설정값 (초기값)
-  let serverSettings = { shippingFee: 4000, freeThreshold: 50000 };
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbwHAbIkeCyA6tRq-ssYWtSyyhC9DERupWkmoslCY_RkifSF-K6oqvjDRMGs75uu_R7S/exec"; 
-
-  // 페이지 로드 시 시트에서 배송비 설정 읽어오기
-  window.onload = function() {
-    fetch(scriptUrl + "?action=getSettings")
-      .then(res => res.json())
-      .then(data => {
-        serverSettings = data;
-        // 상단 설명 박스 문구 자동 변경
-        document.getElementById('feeTxt').innerText = data.shippingFee.toLocaleString();
-        document.getElementById('limitTxt').innerText = (data.freeThreshold / 10000);
-        updateTotalPrice();
-      })
-      .catch(err => {
-        console.error("설정 로딩 실패, 기본값 사용");
-        updateTotalPrice();
-      });
+  const data = {
+    name: form.name.value,
+    phone: form.phone.value,
+    email: form.email.value,
+    product: `${selectedProductName} (${selectedSpecText})`,
+    qty: form.qty.value,
+    total: document.getElementById('totalPriceDisplay').innerText,
+    address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
+    receiptType: form.receiptType.value,
+    receiptId: form.receiptId.value,
+    marketing: "동의"
   };
 
-  function updateTotalPrice() {
-    const price = parseInt(document.getElementById('productSelect').value);
-    const qty = parseInt(document.getElementById('productQty').value) || 0;
-    let total = price * qty;
-    
-    if (total > 0 && total < serverSettings.freeThreshold) {
-      total += serverSettings.shippingFee;
-      document.getElementById('shippingStatus').innerText = `배송비 ${serverSettings.shippingFee.toLocaleString()}원 추가됨`;
-    } else {
-      document.getElementById('shippingStatus').innerText = total >= serverSettings.freeThreshold ? "🎉 무료배송 적용됨" : "";
+  btn.disabled = true;
+  btn.innerText = "처리 중...";
+
+  fetch(scriptUrl, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+  .then(res => res.text())
+  .then(res => {
+    if (res === "Success") {
+      Swal.fire({ icon: 'success', title: '주문 접수 완료!', confirmButtonColor: '#4CAF50' });
+      form.reset();
+      updateTotalPrice();
     }
-    document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
-  }
-
-  function execDaumPostcode() {
-    new daum.Postcode({
-      oncomplete: function(data) {
-        document.getElementById('postcode').value = data.zonecode;
-        document.getElementById('address').value = data.address;
-        document.getElementById('detailAddress').focus();
-      }
-    }).open();
-  }
-
-  function submitForm() {
-    const form = document.getElementById('orderForm');
-    const btn = document.getElementById('submitBtn');
-    
-    if(!form.name.value || !form.phone.value || !form.address.value || !form.privacyAgree.checked) {
-      Swal.fire({ icon: 'warning', title: '입력 확인', text: '필수 항목을 모두 입력/체크해 주세요.' });
-      return;
-    }
-
-    const data = {
-      name: form.name.value,
-      phone: form.phone.value,
-      email: form.email.value,
-      product: "양송이 2kg",
-      qty: form.qty.value,
-      total: document.getElementById('totalPriceDisplay').innerText,
-      address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
-      receiptType: form.receiptType.value,
-      receiptId: form.receiptId.value,
-      marketing: "동의"
-    };
-    
-    btn.disabled = true; btn.innerText = "처리 중...";
-
-    fetch(scriptUrl, { method: 'POST', body: JSON.stringify(data) })
-    .then(res => res.text())
-    .then(res => {
-      if (res === "Success") {
-        Swal.fire({ icon: 'success', title: '주문 접수 완료!', confirmButtonColor: '#4CAF50' });
-        form.reset();
-        updateTotalPrice();
-      }
-      btn.disabled = false; btn.innerText = "주문 완료하기";
-    })
-    .catch(err => {
-      Swal.fire({ icon: 'error', title: '전송 실패', text: '인터넷 연결을 확인해 주세요.' });
-      btn.disabled = false; btn.innerText = "주문 완료하기";
-    });
-  }
+    btn.disabled = false;
+    btn.innerText = "주문 완료하기";
+  })
+  .catch(err => {
+    Swal.fire({ icon: 'error', title: '전송 실패', text: '인터넷 연결을 확인해 주세요.' });
+    btn.disabled = false;
+    btn.innerText = "주문 완료하기";
+  });
+}
 </script>
-</body>
-</html>
