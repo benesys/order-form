@@ -1,106 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>농부여 주문서</title>
-  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-  <style>
-    body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; padding: 20px; line-height: 1.6; background-color: #f4f7f6; color: #333; }
-    .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-    h2 { color: #2d5a27; text-align: center; margin-bottom: 10px; font-size: 24px; }
-    .description { font-size: 0.9em; color: #666; text-align: center; margin-bottom: 25px; background: #f0f4ef; padding: 15px; border-radius: 10px; }
-    .section { margin-bottom: 25px; }
-    .section-title { font-weight: bold; font-size: 1.1em; margin-bottom: 10px; display: block; color: #444; border-left: 4px solid #4CAF50; padding-left: 10px; }
-    input[type="text"], select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-    .btn-zip { background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 12px; font-size: 14px; transition: 0.3s; }
-    .btn-zip:hover { background: #5a6268; }
-    .btn-submit { width: 100%; background: #4CAF50; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-    .btn-submit:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
-    .readonly-input { background-color: #f9f9f9; cursor: not-allowed; }
-  </style>
-</head>
-<body>
+// 주문 전송 함수
+async function submitOrder() {
+  // 위 1번에서 새로 발급받은 Apps Script 웹 앱 배포 URL을 넣어주세요.
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbzP4KiO8_TlWfx9TUOW2nuFjiAjkaPqPLL7irl45R2Y0L2bIbvGrVsYu2ZkMYXfClsr/exec";
 
-<div class="container">
-  <h2>🍄 농부여 주문서</h2>
-  <div class="description">
-    ✅ 산지직송 · 당일수확 · 신선보장<br>
-    🚚 배송비: 4,000원 (5만원 이상 무료)<br>
-    💳 농협 356-1382-2116-13 (김영호)
-  </div>
+  // index.html의 입력창 id에 맞게 수집할 데이터 객체
+  const orderData = {
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    product: document.getElementById("product").value,
+    qty: document.getElementById("qty").value,
+    address: document.getElementById("address").value
+  };
 
-  <form id="orderForm">
-    <div class="section">
-      <span class="section-title">1️⃣ 주문자 정보</span>
-      <input type="text" name="name" placeholder="이름 (주문자)" required>
-      <input type="text" name="phone" placeholder="휴대폰 번호 (- 빼고 입력)" required>
-    </div>
-
-    <div class="section">
-      <span class="section-title">2️⃣ 상품 선택</span>
-      <select name="product">
-        <option>샤인머스켓 2kg - 28,000원</option>
-      </select>
-      <input type="text" name="qty" placeholder="총 주문 수량(개)" required>
-    </div>
-
-    <div class="section">
-      <span class="section-title">3️⃣ 배송 정보</span>
-      <button type="button" class="btn-zip" onclick="execDaumPostcode()">📮 우편번호 검색하기</button>
-      <input type="text" id="postcode" name="postcode" placeholder="우편번호" class="readonly-input" readonly>
-      <input type="text" id="address" name="address" placeholder="기본 주소" class="readonly-input" readonly>
-      <input type="text" id="detailAddress" name="detailAddress" placeholder="상세 주소를 입력해 주세요">
-    </div>
-
-    <button type="button" class="btn-submit" onclick="submitForm()">주문 완료하기</button>
-  </form>
-</div>
-
-<script>
-  // 카카오(다음) 우편번호 API 실행 함수
-  function execDaumPostcode() {
-    new daum.Postcode({
-      oncomplete: function(data) {
-        document.getElementById('postcode').value = data.zonecode;
-        document.getElementById('address').value = data.address;
-        document.getElementById('detailAddress').focus();
-      }
-    }).open();
+  if (!orderData.name || !orderData.phone || !orderData.address) {
+    alert("이름, 연락처, 배송주소를 모두 입력해 주세요.");
+    return;
   }
 
-  // 폼 제출 함수
-  function submitForm() {
-    const form = document.getElementById('orderForm');
-    if(!form.name.value || !form.phone.value || !form.address.value) {
-      alert("모든 필수 항목을 입력해 주세요.");
-      return;
-    }
+  try {
+    // Apps Script의 302 리디렉션 응답을 처리하기 위해 mode: 'no-cors'를 사용합니다.
+    await fetch(scriptUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(orderData)
+    });
 
-    const data = {
-      name: form.name.value,
-      phone: form.phone.value,
-      product: form.product.value,
-      qty: form.qty.value,
-      address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value
-    };
-    
-    // 버튼 비활성화 (중복 클릭 방지)
-    const btn = document.querySelector('.btn-submit');
-    btn.disabled = true;
-    btn.innerText = "처리 중...";
+    alert("✅ 주문이 정상 접수되었습니다!");
+    // 폼 초기화
+    document.getElementById("orderForm").reset();
 
-    google.script.run
-      .withSuccessHandler(function(res) {
-        alert("성공적으로 접수되었습니다!");
-        form.reset();
-        btn.disabled = false;
-        btn.innerText = "주문 완료하기";
-      })
-      .processForm(data);
+  } catch (error) {
+    console.error("전송 에러:", error);
+    alert("❌ 주문 접수 중 오류가 발생했습니다. 다시 시도해 주세요.");
   }
-</script>
-
-</body>
-</html>
+}
