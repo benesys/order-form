@@ -1,128 +1,224 @@
-<script>
-let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
-const scriptUrl = "https://script.google.com/macros/s/AKfycbyrU_r2_8Sn5SC8oDOE5yHDzmb3gkgyuJ8ePUgJSjixJf0FRod-VoSisAq8EbbtPd-T/exec";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>농부여 주문서</title>
+  <!-- 우편번호 및 알림 라이브러리 -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    select, input { width: 100%; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; }
+    .price-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; }
+    button { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
 
-window.onload = function() {
-  fetch(scriptUrl + "?action=getSettings")
-    .then(res => res.json())
-    .then(data => {
-      serverSettings = data;
-      const uniqueProducts = [...new Set(data.productList.map(p => p.name))];
-      const mainSelect = document.getElementById('mainProduct');
-      mainSelect.innerHTML = '<option value="">--- 상품 선택 ---</option>';
-      uniqueProducts.forEach(name => {
+  <h2 id="orderTitle">📦 농부여 주문서</h2>
+
+  <form id="orderForm">
+    <div class="form-group">
+      <label>상품 종류</label>
+      <select id="mainProduct" onchange="updateSpecOptions()">
+        <option value="">상품을 불러오는 중...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>규격(무게/사이즈)</label>
+      <select id="specSelect" onchange="updateTotalPrice()">
+        <option value="">상품을 먼저 선택하세요</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>수량</label>
+      <input type="number" id="productQty" name="qty" value="1" min="1" onchange="updateTotalPrice()">
+    </div>
+
+    <div class="form-group">
+      <label>주문자 성함</label>
+      <input type="text" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <label>연락처</label>
+      <input type="tel" name="phone" placeholder="010-0000-0000" required>
+    </div>
+
+    <div class="form-group">
+      <label>이메일</label>
+      <input type="email" name="email">
+    </div>
+
+    <div class="form-group">
+      <label>배송 주소</label>
+      <input type="text" id="postcode" name="postcode" placeholder="우편번호" readonly onclick="execDaumPostcode()" style="margin-bottom: 5px;">
+      <input type="text" id="address" name="address" placeholder="기본주소" readonly onclick="execDaumPostcode()" style="margin-bottom: 5px;">
+      <input type="text" id="detailAddress" name="detailAddress" placeholder="상세주소를 입력하세요">
+    </div>
+
+    <div class="form-group">
+      <label>영수증 발행 구분</label>
+      <select name="receiptType">
+        <option value="미발행">미발행</option>
+        <option value="현금영수증(소득공제)">현금영수증(개인 소득공제)</option>
+        <option value="지출증빙">지출증빙(사업자)</option>
+      </select>
+      <input type="text" name="receiptId" placeholder="휴대폰 번호 또는 사업자번호" style="margin-top: 5px;">
+    </div>
+
+    <div class="price-box">
+      <div>배송비 안내: 기본 <span id="feeTxt">4,000</span>원 (<span id="limitTxt">5</span>만원 이상 무료)</div>
+      <div id="shippingStatus" style="color: #2e7d32; font-weight: bold; margin-top: 5px;"></div>
+      <h3 style="margin-top: 10px;">총 결제금액: <span id="totalPriceDisplay">0</span>원</h3>
+    </div>
+
+    <div class="form-group" style="margin-top: 15px;">
+      <label style="font-weight: normal;">
+        <input type="checkbox" name="privacyAgree" style="width: auto;"> 개인정보 수집 및 이용에 동의합니다.
+      </label>
+    </div>
+
+    <button type="button" id="submitBtn" onclick="submitForm()">주문 완료하기</button>
+  </form>
+
+  <script>
+    let serverSettings = { shippingFee: 4000, freeThreshold: 50000, productList: [] };
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbyrU_r2_8Sn5SC8oDOE5yHDzmb3gkgyuJ8ePUgJSjixJf0FRod-VoSisAq8EbbtPd-T/exec";
+
+    window.onload = function() {
+      fetch(scriptUrl + "?action=getSettings")
+        .then(res => res.json())
+        .then(data => {
+          serverSettings = data;
+          if (!data.productList || data.productList.length === 0) {
+            document.getElementById('mainProduct').innerHTML = '<option value="">등록된 상품이 없습니다</option>';
+            return;
+          }
+          const uniqueProducts = [...new Set(data.productList.map(p => p.name))];
+          const mainSelect = document.getElementById('mainProduct');
+          mainSelect.innerHTML = '<option value="">--- 상품 선택 ---</option>';
+          uniqueProducts.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.innerText = name;
+            mainSelect.appendChild(opt);
+          });
+          document.getElementById('feeTxt').innerText = Number(data.shippingFee).toLocaleString();
+          document.getElementById('limitTxt').innerText = (Number(data.freeThreshold) / 10000);
+          updateTotalPrice();
+        })
+        .catch(err => {
+          console.error("설정 로딩 실패:", err);
+          document.getElementById('mainProduct').innerHTML = '<option value="">상품 로딩 실패 (새로고침 필요)</option>';
+        });
+    };
+
+    function updateSpecOptions() {
+      const selectedProduct = document.getElementById('mainProduct').value;
+      const specSelect = document.getElementById('specSelect');
+      const titleElement = document.getElementById('orderTitle');
+      specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
+
+      if (!selectedProduct) {
+        titleElement.innerText = "📦 농부여 주문서";
+        updateTotalPrice();
+        return;
+      }
+
+      const productInfo = serverSettings.productList.find(p => p.name === selectedProduct);
+      const currentIcon = productInfo && productInfo.icon ? productInfo.icon : "📦";
+      titleElement.innerText = `${currentIcon} 농부여 ${selectedProduct} 주문서`;
+
+      const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
+      filteredSpecs.forEach(item => {
         const opt = document.createElement('option');
-        opt.value = name;
-        opt.innerText = name;
-        mainSelect.appendChild(opt);
+        opt.value = item.price;
+        opt.innerText = `${item.spec} (${Number(item.price).toLocaleString()}원)`;
+        specSelect.appendChild(opt);
       });
-      document.getElementById('feeTxt').innerText = data.shippingFee.toLocaleString();
-      document.getElementById('limitTxt').innerText = (data.freeThreshold / 10000);
-      updateTotalPrice();
-    })
-    .catch(err => {
-      console.error("설정 로딩 실패", err);
-    });
-};
-
-function updateSpecOptions() {
-  const selectedProduct = document.getElementById('mainProduct').value;
-  const specSelect = document.getElementById('specSelect');
-  const titleElement = document.getElementById('orderTitle');
-  specSelect.innerHTML = '<option value="">--- 규격 선택 ---</option>';
-
-  if (!selectedProduct) {
-    titleElement.innerText = "📦 농부여 주문서";
-    updateTotalPrice();
-    return;
-  }
-
-  const productInfo = serverSettings.productList.find(p => p.name === selectedProduct);
-  const currentIcon = productInfo ? productInfo.icon : "📦";
-  titleElement.innerText = `${currentIcon} 농부여 ${selectedProduct} 주문서`;
-
-  const filteredSpecs = serverSettings.productList.filter(p => p.name === selectedProduct);
-  filteredSpecs.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.price;
-    opt.innerText = `${item.spec} (${item.price.toLocaleString()}원)`;
-    specSelect.appendChild(opt);
-  });
-  updateTotalPrice();
-}
-
-function updateTotalPrice() {
-  const specEl = document.getElementById('specSelect');
-  const price = parseInt(specEl.value) || 0;
-  const qty = parseInt(document.getElementById('productQty').value) || 0;
-  let total = price * qty;
-
-  if (total > 0 && total < serverSettings.freeThreshold) {
-    total += serverSettings.shippingFee;
-    document.getElementById('shippingStatus').innerText = `배송비 ${serverSettings.shippingFee.toLocaleString()}원 추가됨`;
-  } else {
-    document.getElementById('shippingStatus').innerText = (total >= serverSettings.freeThreshold && total > 0) ? "🎉 무료배송 적용됨" : "";
-  }
-  document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
-}
-
-function execDaumPostcode() {
-  new daum.Postcode({
-    oncomplete: function(data) {
-      document.getElementById('postcode').value = data.zonecode;
-      document.getElementById('address').value = data.address;
-      document.getElementById('detailAddress').focus();
-    }
-  }).open();
-}
-
-function submitForm() {
-  const form = document.getElementById('orderForm');
-  const btn = document.getElementById('submitBtn');
-  const specSelect = document.getElementById('specSelect');
-
-  if(!form.name.value || !form.phone.value || !form.address.value || !form.privacyAgree.checked || !specSelect.value) {
-    Swal.fire({ icon: 'warning', title: '입력 확인', text: '상품 규격 및 필수 항목을 모두 입력/체크해 주세요.' });
-    return;
-  }
-
-  const selectedProductName = document.getElementById('mainProduct').value;
-  const selectedSpecText = specSelect.options[specSelect.selectedIndex].text;
-
-  const data = {
-    name: form.name.value,
-    phone: form.phone.value,
-    email: form.email.value,
-    product: `${selectedProductName} (${selectedSpecText})`,
-    qty: form.qty.value,
-    total: document.getElementById('totalPriceDisplay').innerText,
-    address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
-    receiptType: form.receiptType.value,
-    receiptId: form.receiptId.value,
-    marketing: "동의"
-  };
-
-  btn.disabled = true;
-  btn.innerText = "처리 중...";
-
-  fetch(scriptUrl, {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(res => {
-    if (res === "Success") {
-      Swal.fire({ icon: 'success', title: '주문 접수 완료!', confirmButtonColor: '#4CAF50' });
-      form.reset();
       updateTotalPrice();
     }
-    btn.disabled = false;
-    btn.innerText = "주문 완료하기";
-  })
-  .catch(err => {
-    Swal.fire({ icon: 'error', title: '전송 실패', text: '인터넷 연결을 확인해 주세요.' });
-    btn.disabled = false;
-    btn.innerText = "주문 완료하기";
-  });
-}
-</script>
+
+    function updateTotalPrice() {
+      const specEl = document.getElementById('specSelect');
+      const price = parseInt(specEl.value) || 0;
+      const qty = parseInt(document.getElementById('productQty').value) || 0;
+      let total = price * qty;
+
+      if (total > 0 && total < serverSettings.freeThreshold) {
+        total += serverSettings.shippingFee;
+        document.getElementById('shippingStatus').innerText = `배송비 ${Number(serverSettings.shippingFee).toLocaleString()}원 추가됨`;
+      } else {
+        document.getElementById('shippingStatus').innerText = (total >= serverSettings.freeThreshold && total > 0) ? "🎉 무료배송 적용됨" : "";
+      }
+      document.getElementById('totalPriceDisplay').innerText = total.toLocaleString();
+    }
+
+    function execDaumPostcode() {
+      new daum.Postcode({
+        oncomplete: function(data) {
+          document.getElementById('postcode').value = data.zonecode;
+          document.getElementById('address').value = data.address;
+          document.getElementById('detailAddress').focus();
+        }
+      }).open();
+    }
+
+    function submitForm() {
+      const form = document.getElementById('orderForm');
+      const btn = document.getElementById('submitBtn');
+      const specSelect = document.getElementById('specSelect');
+
+      if(!form.name.value || !form.phone.value || !form.address.value || !form.privacyAgree.checked || !specSelect.value) {
+        Swal.fire({ icon: 'warning', title: '입력 확인', text: '상품 규격 및 필수 항목을 모두 입력/체크해 주세요.' });
+        return;
+      }
+
+      const selectedProductName = document.getElementById('mainProduct').value;
+      const selectedSpecText = specSelect.options[specSelect.selectedIndex].text;
+
+      const data = {
+        name: form.name.value,
+        phone: form.phone.value,
+        email: form.email.value,
+        product: `${selectedProductName} (${selectedSpecText})`,
+        qty: form.qty.value,
+        total: document.getElementById('totalPriceDisplay').innerText,
+        address: "(" + form.postcode.value + ") " + form.address.value + " " + form.detailAddress.value,
+        receiptType: form.receiptType.value,
+        receiptId: form.receiptId.value,
+        marketing: "동의"
+      };
+
+      btn.disabled = true;
+      btn.innerText = "처리 중...";
+
+      fetch(scriptUrl, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      .then(res => res.text())
+      .then(res => {
+        if (res === "Success") {
+          Swal.fire({ icon: 'success', title: '주문 접수 완료!', confirmButtonColor: '#4CAF50' });
+          form.reset();
+          updateTotalPrice();
+        }
+        btn.disabled = false;
+        btn.innerText = "주문 완료하기";
+      })
+      .catch(err => {
+        Swal.fire({ icon: 'error', title: '전송 실패', text: '인터넷 연결을 확인해 주세요.' });
+        btn.disabled = false;
+        btn.innerText = "주문 완료하기";
+      });
+    }
+  </script>
+</body>
+</html>
